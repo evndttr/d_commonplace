@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A Digital Commonplace Book</title>
+
+<link rel="icon"
+      href="data:image/svg+xml,
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+        <text y='.9em' font-size='90'>❞</text>
+      </svg>">
+
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #121a32;
+    --ink: #e8eefc;
+    --muted: #243051;
+    --accent: #7aa2ff;
+    --accent2: #36d399;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ---- HEADER ---- */
+  header.title {
+    background: var(--panel);
+    border-bottom: 1px solid var(--muted);
+    text-align: center;
+    padding: 12px 16px;
+    position: relative;
+    z-index: 20;
+  }
+
+  header.title .fraktur {
+    display: block;
+    font-size: 1.4em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .subheaders {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 6px;
+  }
+
+  .subheader {
+    font-size: 15px;
+    color: var(--accent2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+    transition: color 0.3s ease;
+  }
+
+  .subheader:hover { color: var(--accent); }
+
+  .arrow {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+  }
+  .arrow.open { transform: rotate(180deg); }
+
+  /* ---- DROP PANELS ---- */
+  .infoPanel {
+    background: var(--panel);
+    border-bottom: 1px solid var(--muted);
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    text-align: center;
+  }
+
+  .infoPanel p {
+    margin: 0 auto;
+    padding: 16px 20px 18px 20px;
+    max-width: 700px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .infoPanel.hidden {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ---- MAIN LAYOUT ---- */
+  .wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    height: calc(100vh - 160px);
+  }
+
+  .panel {
+    background: var(--panel);
+    border-left: 1px solid var(--muted);
+    overflow: auto;
+    position: relative;
+  }
+
+  .panel header {
+    position: sticky;
+    top: 0;
+    background: var(--panel);
+    border-bottom: 1px solid var(--muted);
+    padding: 8px 12px;
+    z-index: 10;
+  }
+
+  .imgHolder { position: relative; }
+  .imgHolder img { width: 100%; display: block; }
+  .imgHolder svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  polygon {
+    fill: rgba(122, 162, 255, 0.15);
+    stroke: var(--accent);
+    stroke-width: 2;
+    pointer-events: all;
+    transition: 0.15s;
+    cursor: pointer;
+  }
+  polygon:hover { fill: rgba(122, 162, 255, 0.25); }
+  polygon.highlight {
+    fill: rgba(54, 211, 153, 0.3);
+    stroke: var(--accent2);
+    stroke-width: 3;
+  }
+  polygon.locked {
+    fill: rgba(255, 165, 0, 0.35);
+    stroke: orange;
+  }
+
+  /* ---- POPUP ---- */
+  #notePopup {
+    position: fixed; /* <— fixed relative to viewport */
+    top: 150px;      /* vertical offset roughly aligned with right panel top */
+    left: 50%;       /* halfway across the screen (center of split panels) */
+    transform: translateX(8px); /* nudge into right panel */
+    background: rgba(18, 26, 50, 0.95);
+    border: 1px solid var(--muted);
+    border-radius: 10px;
+    padding: 14px 18px;
+    max-width: 300px;
+    font-size: 15px;
+    line-height: 1.4;
+    box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+    pointer-events: none;
+    z-index: 9999;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  #notePopup.show { opacity: 1; }
+
+  #notePopup .finger {
+    font-size: 28px;
+    line-height: 1;
+    color: var(--accent2);
+    flex-shrink: 0;
+  }
+</style>
+</head>
+
+<body>
+
+<header class="title">
+  <span class="fraktur">A Digital Commonplace Book</span>
+  <div class="subheaders">
+    <div class="subheader" id="toggleInfo">
+      <span>How to use this site?</span>
+      <span class="arrow" id="arrow">▾</span>
+    </div>
+    <div class="subheader" id="toggleWhat">
+      <span>What is a commonplace book?</span>
+      <span class="arrow" id="arrowWhat">▾</span>
+    </div>
+  </div>
+</header>
+
+<div class="infoPanel hidden" id="infoPanel">
+  <p>The viewer juxtaposes two panes: one contains an excerpt from the commonplace book held at the Princeton University Library, the other contains the printed pages of the book, André Thevet’s <em>Cosmographie Universelle</em>, from which the citations or “common places” are found. As you hover over a line on the left, the right pane locates the passage in the printed text—often depicting the non-linear trajectory of the reader, skipping and backtracking pages.</p>
+</div>
+
+<div class="infoPanel hidden" id="infoPanelWhat">
+  <p>A commonplace book was a notebook for collecting excerpts, quotations, and ideas from reading. By organizing material under thematic headings, early modern readers built personal archives of knowledge for reuse in study, writing, and conversation.</p>
+</div>
+
+<div class="wrap">
+  <section class="panel" id="leftPanel">
+    <header>Anonymous, Notes de Lecture (Reading notes) ca. 1578–1612, Princeton University Library</header>
+  </section>
+
+  <section class="panel" id="rightPanel">
+    <header>André Thevet, Cosmographie Universelle, 1575</header>
+  </section>
+</div>
+
+<!-- move popup outside panels so it's never hidden -->
+<div id="notePopup">
+  <div class="finger">☞</div>
+  <div class="text">Popup test</div>
+</div>
+
+<script>
+/* ---- Info Toggles ---- */
+function setupDropdown(toggleId, arrowId, panelId) {
+  const toggle = document.getElementById(toggleId);
+  const arrow = document.getElementById(arrowId);
+  const panel = document.getElementById(panelId);
+  let open = false;
+  panel.classList.add('hidden');
+  toggle.addEventListener('click', () => {
+    open = !open;
+    panel.classList.toggle('hidden', !open);
+    arrow.classList.toggle('open', open);
+  });
+}
+setupDropdown('toggleInfo', 'arrow', 'infoPanel');
+setupDropdown('toggleWhat', 'arrowWhat', 'infoPanelWhat');
+
+/* ---- PAGE DATA ---- */
+const HAND_PAGES = [
+  { img: "hand/0001_p001.jpg", xml: "hand/0001_p001.xml" }
+];
+
+const PRINT_PAGES = [
+  { img: "print/9.jpeg", xml: "print/9.xml" },
+  { img: "print/49.jpeg", xml: "print/49.xml" },
+  { img: "print/50.jpeg", xml: "print/50.xml" },
+  { img: "print/51.jpeg", xml: "print/51.xml" },
+  { img: "print/52.jpeg", xml: "print/52.xml" },
+  { img: "print/55.jpeg", xml: "print/55.xml" },
+  { img: "print/60.jpeg", xml: "print/60.xml" },
+  { img: "print/66.jpeg", xml: "print/66.xml" },
+  { img: "print/84.jpeg", xml: "print/84.xml" },
+  { img: "print/85.jpeg", xml: "print/85.xml" },
+  { img: "print/96.jpeg", xml: "print/96.xml" },
+  { img: "print/98.jpeg", xml: "print/98.xml" },
+  { img: "print/99.jpeg", xml: "print/99.xml" },
+  { img: "print/100.jpeg", xml: "print/100.xml" },
+  { img: "print/102.jpeg", xml: "print/102.xml" },
+  { img: "print/103.jpeg", xml: "print/103.xml" },
+  { img: "print/104.jpeg", xml: "print/104.xml" },
+  { img: "print/106.jpeg", xml: "print/106.xml" },
+  { img: "print/111.jpeg", xml: "print/111.xml" },
+  { img: "print/112.jpeg", xml: "print/112.xml" }
+];
+
+/* ---- HELPERS ---- */
+async function fetchFresh(url) {
+  const res = await fetch(`${url}?t=${Date.now()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to load ${url}`);
+  return res.text();
+}
+
+async function parsePageXML(xmlPath) {
+  const text = await fetchFresh(xmlPath);
+  const xml = new DOMParser().parseFromString(text, "application/xml");
+  const isPAGE = xml.documentElement.nodeName.includes("PcGts");
+  const shapes = [];
+  if (isPAGE) {
+    xml.querySelectorAll("TextLine").forEach(line => {
+      const id = line.getAttribute("id") || "";
+      const coords = line.querySelector("Coords")?.getAttribute("points");
+      if (coords) shapes.push({ id, coords });
+    });
+  } else {
+    xml.querySelectorAll("line, object").forEach((el, i) => {
+      const id = el.getAttribute("id") || el.querySelector("name")?.textContent || i;
+      const coords = el.querySelector("Coords")?.getAttribute("points");
+      if (coords) shapes.push({ id, coords });
+    });
+  }
+  return shapes;
+}
+
+/* ---- DRAW + INTERACTION ---- */
+async function drawPage(imgPath, xmlPath, panel, side) {
+  const holder = document.createElement("div");
+  holder.className = "imgHolder";
+  const img = document.createElement("img");
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  holder.append(img, svg);
+  panel.append(holder);
+  img.src = imgPath;
+
+  await img.decode().catch(() => {});
+  svg.setAttribute("viewBox", `0 0 ${img.naturalWidth} ${img.naturalHeight}`);
+
+  const shapes = await parsePageXML(xmlPath);
+  for (const s of shapes) {
+    const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    poly.setAttribute("points", s.coords);
+    poly.dataset.id = s.id;
+    poly.dataset.side = side;
+    setupPolygonEvents(poly, s.id, side);
+    svg.appendChild(poly);
+  }
+}
+
+/* ---- POPUP ---- */
+const popup = document.getElementById("notePopup");
+function showPopup(text) {
+  if (!text) return;
+  popup.querySelector(".text").innerHTML = text;
+  popup.classList.add("show");
+}
+function hidePopup() { popup.classList.remove("show"); }
+
+/* ---- HOVER + CLICK LOGIC ---- */
+function setupPolygonEvents(poly, id, side) {
+  poly.addEventListener("mouseenter", () => {
+    highlightPair(id);
+    document.querySelectorAll(`polygon[data-id="${CSS.escape(id)}"]`).forEach(p => {
+      if (p.dataset.side !== side) scrollToPolygon(p);
+    });
+    const note = POPUP_MAP[id];
+    showPopup(note);
+  });
+  poly.addEventListener("mouseleave", () => {
+    clearHighlight();
+    hidePopup();
+  });
+  poly.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleSelect(id, side);
+  });
+}
+
+function highlightPair(id) {
+  document.querySelectorAll(`polygon[data-id="${CSS.escape(id)}"]`)
+    .forEach(p => p.classList.add("highlight"));
+}
+function clearHighlight() {
+  document.querySelectorAll("polygon.highlight:not(.locked)")
+    .forEach(p => p.classList.remove("highlight"));
+}
+function clearSelection() {
+  document.querySelectorAll("polygon.locked, polygon.highlight").forEach(p => {
+    p.classList.remove("locked", "highlight");
+  });
+  hidePopup();
+}
+function toggleSelect(id, fromSide) {
+  const polys = document.querySelectorAll(`polygon[data-id="${CSS.escape(id)}"]`);
+  const isSelected = [...polys].some(p => p.classList.contains("locked"));
+  clearSelection();
+  if (!isSelected) {
+    polys.forEach(p => {
+      p.classList.add("locked", "highlight");
+      if (p.dataset.side !== fromSide) scrollToPolygon(p);
+    });
+    const note = POPUP_MAP[id];
+    showPopup(note);
+  }
+}
+document.addEventListener("click", e => {
+  if (!e.target.closest("polygon")) clearSelection();
+});
+
+/* ---- POPUP NOTES ---- */
+const POPUP_NOTES = [
+  { line: "line_3", text: "The header of the manuscript identifies the text the citations are drawn from: <em>'That which follows was taken from the cosmographie of mr. andre thevet from angouleme, the royal cosmographer…'</em>" },
+  { line: "line_5", text: "The initial notes are primarily concerned with <em>collecting</em> information: lists of short terms: planets, signs of the zodiac, cardinal and intercardinal directions of wind." },
+  { line: "line_24", text: "The notes do not progress in a linear fashion. Here the reader backtracks several pages to Thevet's general description of the region, after having started taking notes on Tremissen, or modern-day Tlemcen in Algeria" },
+  { line: "line_14", text: "'There is no location on earth that is uninhabitable,' remarks Thevet. Here, as elsewhere, the reader maintains a particular interest in the ways Thevet debunks ancient ideas about the world." },
+  { line: "line_28", text: "'Thevet says he's never seen dragons, griffons, or mermaids' Again, the reader, although uninterested in the details of Thevet's long critiques of ancient geographers and historians like Pliny, Herodotus, and Diodorus Siculus, consistently inventories these objections, and Thevet's emphasis on observable phenomena." },
+  { line: "line_51", text: "Another 'folie' or false opinion of ancient authors." }
+];
+const POPUP_MAP = Object.fromEntries(POPUP_NOTES.map(n => [n.line, n.text]));
+
+/* ---- SCROLLING ---- */
+function scrollToPolygon(poly) {
+  if (!poly) return;
+  const panel = poly.closest('.panel');
+  const holder = poly.closest('.imgHolder');
+  const img = holder?.querySelector('img');
+  if (!panel || !holder || !img || !img.naturalHeight) return;
+  const bbox = poly.getBBox();
+  const scaleY = img.clientHeight / img.naturalHeight;
+  const y = bbox.y * scaleY;
+  const h = bbox.height * scaleY;
+  const offsetTop = holder.offsetTop;
+  const targetY = offsetTop + y + h / 2 - panel.clientHeight / 2;
+  panel.scrollTo({ top: Math.max(targetY, 0), behavior: 'smooth' });
+}
+
+/* ---- INIT ---- */
+async function init() {
+  const leftPanel = document.getElementById("leftPanel");
+  const rightPanel = document.getElementById("rightPanel");
+  for (const p of HAND_PAGES) await drawPage(p.img, p.xml, leftPanel, "left");
+  for (const p of PRINT_PAGES) await drawPage(p.img, p.xml, rightPanel, "right");
+}
+init();
+</script>
+</body>
+</html>

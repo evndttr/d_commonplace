@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<PcGts xmlns="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15">
+  <Page imageFilename="La_cosmographie_universelle_d'André_Thevet_[...]Thevet_André_btv1b8626690f_84.jpeg" imageWidth="966" imageHeight="1566">
+    <TextLine id="line_23">
+      <Coords points="225,710 287,710 287,800 225,800"/>
+    </TextLine>
+    <TextLine id="line_23">
+      <Coords points="761,438 842,438 842,465 761,465"/>
+    </TextLine>
+  </Page>
+</PcGts>

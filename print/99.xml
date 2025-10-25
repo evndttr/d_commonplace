@@ -1,0 +1,3 @@
+<?xml version='1.0' encoding='utf-8'?>
+<PcGts xmlns="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15"><Page imageFilename="La_cosmographie_universelle_d'André_Thevet_[...]Thevet_André_btv1b8626690f_99.jpeg" imageWidth="962" imageHeight="1566"><TextLine id="line_31"><Coords 
+points="419,240 628,240 628,266 419,266" /></TextLine><TextLine id="line_33"><Coords points="537,1121 703,1121 703,1144 537,1144" /></TextLine><TextLine id="line_34"><Coords points="91,1138 580,1138 580,1166 91,1166" /></TextLine><TextLine id="line_31"><Coords points="333,352 694,352 694,375 333,375" /></TextLine><TextLine id="line_32"><Coords points="83,373 669,373 669,398 83,398" /></TextLine></Page></PcGts>

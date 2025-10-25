@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<PcGts xmlns="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15">
+  <Page imageFilename="55.jpeg" imageWidth="965" imageHeight="1566">
+    <TextLine id="line_16">
+      <Coords points="362.233,432.536 380.766,431.213 379.442,521.228 362.233,522.552"/>
+    </TextLine>
+    <TextLine id="line_18">
+      <Coords points="511.818,482.212 524.393,496.738 470.119,552.998 457.544,541.084"/>
+    </TextLine>
+    <TextLine id="line_17">
+      <Coords points="510.599,628.521 586.192,623.645 586.609,643.013 510.494,644.999"/>
+    </TextLine>
+    <TextLine id="line_19">
+      <Coords points="534.984,784.585 523.731,797.892 476.076,748.913 489.975,737.000"/>
+    </TextLine>
+    <TextLine id="line_16">
+      <Coords points="377.456,861.432 398.637,862.094 396.651,812.454 377.456,813.115"/>
+    </TextLine>
+    <TextLine id="line_19">
+      <Coords points="228.534,788.626 243.757,802.525 294.722,749.575 282.808,733.690"/>
+    </TextLine>
+    <TextLine id="line_17">
+      <Coords points="168.965,641.027 169.266,661.080 265.361,661.080 265.599,640.366"/>
+    </TextLine>
+    <TextLine id="line_20">
+      <Coords points="220.592,509.314 236.477,493.429 282.146,541.084 268.247,554.984"/>
+    </TextLine>
+    <TextLine id="line_15">
+      <Coords points="181.417,1050.795 475.158,1050.795 474.231,1077.667 181.417,1073.961"/>
+    </TextLine>
+    <TextLine id="line_15">
+      <Coords points="82.070,1074.501 289.789,1079.135 289.789,1099.212 81.298,1094.578"/>
+    </TextLine>
+  </Page>
+</PcGts>
